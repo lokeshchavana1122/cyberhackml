@@ -1,0 +1,176 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sn
+import skimage.io
+import keras.backend as K
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.layers import Dense, Flatten, Dropout,BatchNormalization ,Activation
+from tensorflow.keras.models import Model, Sequential
+from keras.applications.nasnet import NASNetLarge
+from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, EarlyStopping
+from tensorflow.keras.optimizers import Adam
+train_datagen = ImageDataGenerator(rescale = 1./255,
+                                   validation_split = 0.2,
+                                  
+        rotation_range=5,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2,
+        #zoom_range=0.2,
+        horizontal_flip=True,
+        vertical_flip=True,
+        fill_mode='nearest')
+        
+        train_dataset  = train_datagen.flow_from_directory(directory = '/kaggle/input/fer2013/train',
+                                                   target_size = (48,48),
+                                                   class_mode = 'categorical',
+                                                   subset = 'training',
+                                                   batch_size = 64)
+                                                   
+       # <h2>ResNet 50 Model training</h2>                                            
+       
+       from tensorflow.keras.applications import VGG16, VGG19
+       base_model_2 = tf.keras.applications.VGG19(input_shape=(48,48,3),include_top=False,weights="imagenet")
+       
+       for layer in base_model.layers[:-4]:
+    layer.trainable=False
+    
+    model=Sequential()
+model.add(base_model_2)
+model.add(Dropout(0.5))
+model.add(Flatten())
+model.add(BatchNormalization())
+model.add(Dense(32,kernel_initializer='he_uniform'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(32,kernel_initializer='he_uniform'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(32,kernel_initializer='he_uniform'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dense(7,activation='softmax'))
+
+model.compile(optimizer='Adam', loss='categorical_crossentropy',metrics=METRICS)
+
+history=model.fit(train_dataset,epochs=2)
+
+dnn = Sequential()
+pretrained_model = tf.keras.applications.densenet.DenseNet121(
+    include_top=False,
+    weights='imagenet',
+    input_shape=(48, 48, 3),
+    pooling='avg',
+    classes=7,
+)
+
+for layer in pretrained_model.layers:
+        layer.trainable=False
+
+dnn.add(pretrained_model)
+
+dnn.add(Flatten())
+dnn.add(Dense(512, activation='relu'))
+dnn.add(Dense(7, activation='softmax'))
+
+dnn.compile(optimizer='Adam',loss='categorical_crossentropy',metrics=['accuracy'])
+
+history = dnn.fit(train_dataset,epochs = 2)
+
+base_model_2 = tf.keras.applications.VGG19(input_shape=(48,48,3),include_top=False,weights="imagenet")
+
+for layer in base_model.layers[:-4]:
+    layer.trainable=False
+    
+ model=Sequential()
+model.add(base_model_2)
+model.add(Dropout(0.5))
+model.add(Flatten())
+model.add(BatchNormalization())
+model.add(Dense(32,kernel_initializer='he_uniform'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(32,kernel_initializer='he_uniform'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(32,kernel_initializer='he_uniform'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dense(7,activation='softmax'))
+
+model.compile(optimizer='Adam', loss='categorical_crossentropy',metrics=METRICS)
+
+history=model.fit(train_dataset,epochs=2)
+
+images = []
+labels = []
+
+import os
+import cv2
+i = 0
+for j in os.listdir('/kaggle/input/fer2013/train'):
+  print(j)
+  for img in os.listdir(f'/kaggle/input/fer2013/train/{j}'):
+    img = cv2.imread(f'/kaggle/input/fer2013/train/{j}/{img}',0)
+    img = cv2.resize(img, (48,48))
+    img = img.flatten()
+    images.append(img)
+    labels.append(i)
+  i += 1
+  
+  images[0]
+  
+  labels[0]
+  
+  from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2)
+
+from sklearn.neighbors import KNeighborsClassifier
+clf = KNeighborsClassifier()
+clf.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+
+from sklearn.metrics import accuracy_score
+accuracy_score(y_pred, y_test)
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+ac = [85.99, 80.32]
+plt.style.use('ggplot')
+x = ['googlenet', 'AlexNet']
+ax = sns.barplot(x, ac)
+ax.set_title('Accuracy Comparison')
+ax.set_ylabel('Accuracy')
+ax.set_ylim(20, 90)
+
+ac = [85.99, 70.45]
+plt.style.use('ggplot')
+x = ['googlenet', 'resnet']
+ax = sns.barplot(x, ac)
+ax.set_title('Accuracy Comparison')
+ax.set_ylabel('Accuracy')
+ax.set_ylim(20, 90)
+
+ac = [85.99, 80.33]
+plt.style.use('ggplot')
+x = ['googlenet', 'densenet']
+ax = sns.barplot(x, ac)
+ax.set_title('Accuracy Comparison')
+ax.set_ylabel('Accuracy')
+ax.set_ylim(20, 90)
+
+ac = [85.99, 35.54]
+plt.style.use('ggplot')
+x = ['Googlenet', 'inception']
+ax = sns.barplot(x, ac)
+ax.set_title('Accuracy Comparison')
+ax.set_ylabel('Accuracy')
+ax.set_ylim(20, 90)
